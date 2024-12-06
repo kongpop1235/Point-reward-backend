@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { registerUser, loginUser, updatePassword, updatePoints, redeemProduct } = require('../controllers/userController');
+const { registerUser, loginUser, updatePassword, updatePoints } = require('../controllers/userController');
 const { verifyToken } = require('../middleware/authMiddleware');
 
 // ลงทะเบียน
@@ -14,8 +14,5 @@ router.put('/password', verifyToken, updatePassword);
 
 // อัปเดตคะแนน
 router.put('/points', verifyToken, updatePoints);
-
-// แลกสินค้า
-router.post('/redeem', verifyToken, redeemProduct);
 
 module.exports = router;

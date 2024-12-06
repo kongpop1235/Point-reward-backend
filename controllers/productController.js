@@ -1,4 +1,5 @@
 const Product = require('../models/Product');
+const User = require('../models/User');
 
 // เพิ่มสินค้าใหม่
 exports.addProduct = async (req, res) => {
@@ -58,6 +59,55 @@ exports.getProductById = async (req, res) => {
       return res.status(404).json({ message: 'Product not found' });
     }
     res.json(product);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// แลกสินค้า
+exports.redeemProduct = async (req, res) => {
+  // const { productId, quantity } = req.body;
+  const { productId } = req.body;
+  const quantity = 1;
+
+  try {
+    // ค้นหา User จาก Token
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    // ค้นหาสินค้า
+    const product = await Product.findOne({ id: productId });
+    if (!product) return res.status(404).json({ message: 'Product not found' });
+
+    // ตรวจสอบคะแนนและจำนวนคงเหลือ
+    if (user.points < product.pointsRequired * quantity) {
+      return res.status(400).json({ message: 'Not enough points to redeem this product' });
+    }
+    if (product.remaining < quantity) {
+      return res.status(400).json({ message: 'Not enough product remaining' });
+    }
+
+    // ลดคะแนนของ User
+    user.points -= product.pointsRequired * quantity;
+
+    // ลดจำนวนคงเหลือของสินค้า
+    product.remaining -= quantity;
+
+    // บันทึกข้อมูลว่า User แลกสินค้า
+    product.redeemedBy.push({
+      userId: user._id,
+      redeemedAt: new Date()
+    });
+
+    await user.save();
+    await product.save();
+
+    res.json({
+      message: 'Product redeemed successfully',
+      remainingPoints: user.points,
+      productRemaining: product.remaining,
+      redeemedBy: product.redeemedBy
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

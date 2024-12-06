@@ -6,7 +6,7 @@ exports.verifyToken = (req, res, next) => {
 
   if (!authHeader) return res.status(401).json({ message: 'Access Denied' });
 
-  const token = authHeader.split(' ')[1]; // แยกเอา Token ออกมา
+  const token = authHeader.split(' ')[1];
 
   if (!token) return res.status(401).json({ message: 'Access Denied' });
 

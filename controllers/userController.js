@@ -53,7 +53,7 @@ exports.updatePassword = async (req, res) => {
     const isMatch = await user.matchPassword(currentPassword);
     if (!isMatch) return res.status(400).json({ message: 'Current password is incorrect' });
 
-    user.password = newPassword; // Password จะถูก Hash โดย Pre Hook
+    user.password = newPassword;
     await user.save();
 
     res.json({ message: 'Password updated successfully' });
@@ -67,49 +67,13 @@ exports.updatePoints = async (req, res) => {
   const { points } = req.body;
 
   try {
-    const user = await User.findById(req.user.id); // req.user มาจาก verifyToken
-    if (!user) return res.status(404).json({ message: 'User not found' });
-
-    user.points += points; // เพิ่มคะแนน
-    await user.save();
-
-    res.json({ message: 'Points updated successfully', points: user.points });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-};
-
-// แลกสินค้า
-exports.redeemProduct = async (req, res) => {
-  const { productId, productName, quantity, pointsToDeduct } = req.body;
-
-  try {
-    // ค้นหา User จาก Token
     const user = await User.findById(req.user.id);
     if (!user) return res.status(404).json({ message: 'User not found' });
 
-    // ตรวจสอบคะแนนเพียงพอหรือไม่
-    if (user.points < pointsToDeduct) {
-      return res.status(400).json({ message: 'Not enough points to redeem this product' });
-    }
-
-    // ลดคะแนน
-    user.points -= pointsToDeduct;
-
-    // เพิ่มรายการสินค้าที่แลก
-    user.redeemedItems.push({
-      productId,
-      productName,
-      quantity
-    });
-
+    user.points += points;
     await user.save();
 
-    res.json({
-      message: 'Product redeemed successfully',
-      redeemedItems: user.redeemedItems,
-      remainingPoints: user.points
-    });
+    res.json({ message: 'Points updated successfully', points: user.points });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
