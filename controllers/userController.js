@@ -78,3 +78,23 @@ exports.updatePoints = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
+// ฟังก์ชันอัปเดตข้อมูล Redeemed Items
+exports.updateRedeemedItems = async (userId, productId, title, quantity) => {
+  try {
+    const user = await User.findById(userId);
+    if (!user) throw new Error('User not found');
+
+    user.redeemedItems.push({
+      productId,
+      title,
+      quantity,
+      redeemedAt: new Date()
+    });
+
+    await user.save();
+    return user;
+  } catch (err) {
+    throw new Error(err.message);
+  }
+};

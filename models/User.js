@@ -14,7 +14,7 @@ const userSchema = new mongoose.Schema({
   redeemedItems: [
     {
       productId: { type: mongoose.Schema.Types.ObjectId, required: true, ref: 'Product' },
-      productName: { type: String, required: true },
+      title: { type: String, required: true },
       quantity: { type: Number, required: true },
       redeemedAt: { type: Date, default: Date.now }
     }
