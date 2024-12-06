@@ -1,5 +1,6 @@
 const Product = require('../models/Product');
 const User = require('../models/User');
+const { updateRedeemedItems } = require('./userController');
 
 // เพิ่มสินค้าใหม่
 exports.addProduct = async (req, res) => {
@@ -92,6 +93,9 @@ exports.redeemProduct = async (req, res) => {
 
     // ลดจำนวนคงเหลือของสินค้า
     product.remaining -= quantity;
+
+    // อัปเดตข้อมูล Redeemed Items ใน User
+    await updateRedeemedItems(user._id, product._id, product.title, quantity);
 
     // บันทึกข้อมูลว่า User แลกสินค้า
     product.redeemedBy.push({
