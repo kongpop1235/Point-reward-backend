@@ -1,7 +1,7 @@
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 
-// ลงทะเบียน User ใหม่
+// Register
 exports.registerUser = async (req, res) => {
   const { username, password, name } = req.body;
 
@@ -9,17 +9,33 @@ exports.registerUser = async (req, res) => {
     const existingUser = await User.findOne({ username });
     if (existingUser) return res.status(400).json({ message: 'Username already exists' });
 
-    // สร้าง User ใหม่
+    // Create a new User
     const user = new User({ username, password, name, points: 100 });
     await user.save();
+    // Generate JWT Token
+    const token = jwt.sign(
+      { id: user._id, username: user.username, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: '1h' }
+    );
 
-    res.status(201).json({ message: 'User registered successfully' });
+    res.status(201).json({
+      token,
+      message: 'User registered successfully',
+      user: {
+        id: user._id,
+        username: user.username,
+        name: user.name,
+        points: user.points,
+        role: user.role
+      }
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
 
-// เข้าสู่ระบบ
+// Login
 exports.loginUser = async (req, res) => {
   const { username, password } = req.body;
 
@@ -42,7 +58,7 @@ exports.loginUser = async (req, res) => {
   }
 };
 
-// แก้ไขรหัสผ่าน
+// Edit password
 exports.updatePassword = async (req, res) => {
   const { currentPassword, newPassword } = req.body;
 
@@ -62,7 +78,7 @@ exports.updatePassword = async (req, res) => {
   }
 };
 
-//เพิ่มคะแนน
+// increase score
 exports.updatePoints = async (req, res) => {
   const { points } = req.body;
 
@@ -79,7 +95,7 @@ exports.updatePoints = async (req, res) => {
   }
 };
 
-// ฟังก์ชันอัปเดตข้อมูล Redeemed Items
+// Data update Redeemed Items
 exports.updateRedeemedItems = async (userId, productId, title, quantity) => {
   try {
     const user = await User.findById(userId);
@@ -96,5 +112,24 @@ exports.updateRedeemedItems = async (userId, productId, title, quantity) => {
     return user;
   } catch (err) {
     throw new Error(err.message);
+  }
+};
+
+// Get user information
+exports.getUserProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select('-password');
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    res.json({
+      id: user._id,
+      username: user.username,
+      name: user.name,
+      points: user.points,
+      role: user.role,
+      redeemedItems: user.redeemedItems
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 };

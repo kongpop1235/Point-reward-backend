@@ -1,13 +1,19 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const bodyParser = require('body-parser');
+const cors = require('cors'); // Import CORS
 require('dotenv').config();
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 5000;
+
+// ใช้ CORS Middleware
+app.use(cors({
+  origin: 'http://localhost:3000', // Specify permission from frontend at localhost:3000
+  credentials: true // Allow Cookies and Headers
+}));
 
 // Middleware
-app.use(bodyParser.json());
+app.use(express.json());
 
 mongoose
   .connect(process.env.MONGO_URI)

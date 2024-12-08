@@ -1,18 +1,21 @@
 const express = require('express');
 const router = express.Router();
-const { registerUser, loginUser, updatePassword, updatePoints } = require('../controllers/userController');
+const { registerUser, loginUser, updatePassword, updatePoints, getUserProfile } = require('../controllers/userController');
 const { verifyToken } = require('../middleware/authMiddleware');
 
-// ลงทะเบียน
+// register
 router.post('/register', registerUser);
 
-// เข้าสู่ระบบ
+// Login
 router.post('/login', loginUser);
 
-// แก้ไขรหัสผ่าน
+// Edit password
 router.put('/password', verifyToken, updatePassword);
 
-// อัปเดตคะแนน
+// Update score
 router.put('/points', verifyToken, updatePoints);
+
+// Get user information
+router.get('/profile', verifyToken, getUserProfile);
 
 module.exports = router;
