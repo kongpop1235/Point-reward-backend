@@ -23,10 +23,12 @@ mongoose
 const userRoutes = require('./routes/userRoutes');
 const productRoutes = require('./routes/productRoutes');
 const redemptionRoutes = require('./routes/redemptionRoutes');
+const advertisedProductRoutes = require('./routes/advertisedProductRoutes');
 
 app.use('/api/users', userRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/redemptions', redemptionRoutes);
+app.use('/api/advertised-products', advertisedProductRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
