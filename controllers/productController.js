@@ -2,7 +2,7 @@ const Product = require('../models/Product');
 const User = require('../models/User');
 const { updateRedeemedItems } = require('./userController');
 
-// เพิ่มสินค้าใหม่
+// Add
 exports.addProduct = async (req, res) => {
   const { id, imageUrl, title, description, pointsRequired, expiryDate, remaining } = req.body;
 
@@ -29,17 +29,17 @@ exports.addProduct = async (req, res) => {
   }
 };
 
-// ดึงสินค้าทั้งหมด
+// Get all
 exports.getProducts = async (req, res) => {
   try {
-    const products = await Product.find();
+    const products = await Product.find().select('-redeemedBy');
     res.json(products);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
 
-// ลบสินค้า
+// Delete
 exports.deleteProduct = async (req, res) => {
   try {
     const product = await Product.findOneAndDelete({ id: req.params.id });
@@ -52,10 +52,10 @@ exports.deleteProduct = async (req, res) => {
   }
 };
 
-// ดึงข้อมูลสินค้าโดย ID
+// Get by ID
 exports.getProductById = async (req, res) => {
   try {
-    const product = await Product.findOne({ id: req.params.id });
+    const product = await Product.findOne({ id: req.params.id }).select('-redeemedBy');
     if (!product) {
       return res.status(404).json({ message: 'Product not found' });
     }
@@ -65,22 +65,22 @@ exports.getProductById = async (req, res) => {
   }
 };
 
-// แลกสินค้า
+// Add redeem product
 exports.redeemProduct = async (req, res) => {
   // const { productId, quantity } = req.body;
   const { productId } = req.body;
   const quantity = 1;
 
   try {
-    // ค้นหา User จาก Token
+    // Find User by Token
     const user = await User.findById(req.user.id);
     if (!user) return res.status(404).json({ message: 'User not found' });
 
-    // ค้นหาสินค้า
+    // Search for products
     const product = await Product.findOne({ id: productId });
     if (!product) return res.status(404).json({ message: 'Product not found' });
 
-    // ตรวจสอบคะแนนและจำนวนคงเหลือ
+    // Check points and remaining amount
     if (user.points < product.pointsRequired * quantity) {
       return res.status(400).json({ message: 'Not enough points to redeem this product' });
     }
@@ -88,16 +88,16 @@ exports.redeemProduct = async (req, res) => {
       return res.status(400).json({ message: 'Not enough product remaining' });
     }
 
-    // ลดคะแนนของ User
+    // Reduce your score. User
     user.points -= product.pointsRequired * quantity;
 
-    // ลดจำนวนคงเหลือของสินค้า
+    // Reduce the amount of merchandise remaining
     product.remaining -= quantity;
 
-    // อัปเดตข้อมูล Redeemed Items ใน User
+    // Update information Redeemed Items ใน User
     await updateRedeemedItems(user._id, product._id, product.title, quantity);
 
-    // บันทึกข้อมูลว่า User แลกสินค้า
+    // Record information that User exchanges products
     product.redeemedBy.push({
       userId: user._id,
       redeemedAt: new Date()
