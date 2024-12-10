@@ -8,7 +8,7 @@ const PORT = process.env.PORT || 5000;
 
 // ใช้ CORS Middleware
 app.use(cors({
-  origin: ['http://localhost:3000', 'https://point-reward-frontend-cniqxsx87-kongpop1235s-projects.vercel.app'], // Specify permission from frontend at localhost:3000
+  origin: ['http://localhost:3000', 'https://point-reward-frontend.vercel.app/'], // Specify permission from frontend at localhost:3000
   credentials: true // Allow Cookies and Headers
 }));
 
